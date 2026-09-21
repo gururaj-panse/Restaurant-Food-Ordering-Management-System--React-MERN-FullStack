@@ -1,0 +1,27 @@
+# Module 3 skeleton — minimal dependency set for the application structure only.
+# Business-logic dependencies are introduced module-by-module as each Jira
+# story migrates real business logic. python-jose/PyJWT and cloudinary are
+# still NOT added (RFOMS-7 / RFOMS-9 respectively, not yet migrated).
+
+fastapi>=0.115
+uvicorn[standard]>=0.30
+motor>=3.5
+bcrypt>=4.1
+pydantic>=2.7
+pydantic[email]>=2.7
+pydantic-settings>=2.3
+python-multipart>=0.0.9
+
+# Order Management & Order Lifecycle module (RFOMS-11/12/13)
+# Pinned below v10: stripe-python >=10 ships a deeply nested `events/`
+# package whose file paths exceed Windows' default 260-char limit without
+# Long Path support enabled — an environment constraint, not a design
+# choice. stripe>=7,<11 exposes the same checkout.Session / Webhook API
+# surface this module uses.
+stripe>=7.0,<11.0
+
+# Testing
+pytest>=8.0
+pytest-asyncio>=0.23
+httpx>=0.27
+mongomock-motor>=0.0.30  # in-memory Motor-compatible MongoDB for repository tests; no real DB or network access
