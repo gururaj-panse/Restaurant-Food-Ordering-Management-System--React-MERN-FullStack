@@ -26,7 +26,14 @@ configure_logging(settings.LOG_LEVEL)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if settings.mongodb_uri:
-        await mongodb.connect(settings.mongodb_uri)
+        try:
+            await mongodb.connect(settings.mongodb_uri)
+        except Exception as exc:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Could not connect to MongoDB (%s) — starting without active database connection.",
+                exc,
+            )
     else:
         # Allow the app to boot without a DB for structure verification
         # (e.g. `uvicorn app.main:app` with no .env yet) — every DB-backed

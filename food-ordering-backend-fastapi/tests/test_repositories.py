@@ -262,3 +262,34 @@ async def test_order_update_status_without_total_amount_leaves_it_untouched(db):
     stored = await repo.get_by_id(order_id)
     assert stored["status"] == "inProgress"
     assert stored["totalAmount"] == 1730
+
+
+@pytest.mark.asyncio
+async def test_ut_repo_01_order_update_status_on_nonexistent_id_returns_false(db):
+    """
+    RestaurantService.update_order_status's race-condition handling (order
+    deleted between the initial lookup and the write) assumes update_status
+    returns False rather than raising when the id no longer matches a
+    document. This confirms the repository actually implements that
+    contract, rather than the service-level test's mock merely assuming it.
+    """
+    repo = OrderRepository(db["orders"])
+    nonexistent_id = str(ObjectId())
+
+    updated = await repo.update_status(nonexistent_id, status="paid")
+
+    assert updated is False
+
+
+@pytest.mark.asyncio
+async def test_ut_repo_02_order_get_by_id_with_invalid_objectid_returns_none(db):
+    """
+    BaseRepository.get_by_id's ObjectId.is_valid guard is the one thing
+    standing between a malformed id string and a driver-level crash for any
+    caller that doesn't perform its own format check first.
+    """
+    repo = OrderRepository(db["orders"])
+
+    result = await repo.get_by_id("not-a-valid-object-id")
+
+    assert result is None

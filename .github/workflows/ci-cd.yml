@@ -1,0 +1,76 @@
+name: FastAPI Backend CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'food-ordering-backend-fastapi/**'
+      - '.github/workflows/ci-cd.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'food-ordering-backend-fastapi/**'
+      - '.github/workflows/ci-cd.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fastapi-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: food-ordering-backend-fastapi
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: food-ordering-backend-fastapi/requirements.txt
+      - run: pip install -r requirements.txt ruff
+      - run: ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: food-ordering-backend-fastapi/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Build sanity check (app imports)
+        run: python -c "import app.main"
+      - run: pytest -v
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: food-ordering-backend-fastapi/requirements.txt
+      - run: pip install pip-audit
+      - run: pip-audit -r requirements.txt
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image (validation only, no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: food-ordering-backend-fastapi
+          push: false
+          tags: food-ordering-backend-fastapi:ci

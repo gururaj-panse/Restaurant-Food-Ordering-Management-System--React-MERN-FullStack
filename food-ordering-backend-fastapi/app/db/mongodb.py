@@ -21,8 +21,11 @@ class MongoDB:
     database: AsyncIOMotorDatabase | None = None
 
     async def connect(self, uri: str) -> None:
-        self.client = AsyncIOMotorClient(uri)
-        self.database = self.client.get_default_database()
+        self.client = AsyncIOMotorClient(uri, serverSelectionTimeoutMS=3000)
+        try:
+            self.database = self.client.get_default_database()
+        except Exception:
+            self.database = self.client.get_database("food-ordering")
         # Fail fast on a bad connection string / unreachable server rather
         # than discovering it on the first request.
         await self.client.admin.command("ping")

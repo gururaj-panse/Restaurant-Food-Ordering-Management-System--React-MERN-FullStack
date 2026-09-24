@@ -1,7 +1,7 @@
 # Module 3 skeleton — minimal dependency set for the application structure only.
 # Business-logic dependencies are introduced module-by-module as each Jira
-# story migrates real business logic. python-jose/PyJWT and cloudinary are
-# still NOT added (RFOMS-7 / RFOMS-9 respectively, not yet migrated).
+# story migrates real business logic. cloudinary is still NOT added
+# (RFOMS-9, not yet migrated).
 
 fastapi>=0.115
 uvicorn[standard]>=0.30
@@ -11,6 +11,7 @@ pydantic>=2.7
 pydantic[email]>=2.7
 pydantic-settings>=2.3
 python-multipart>=0.0.9
+PyJWT>=2.8  # used by app/api/deps.py and app/services/auth_service.py (RFOMS-7)
 
 # Order Management & Order Lifecycle module (RFOMS-11/12/13)
 # Pinned below v10: stripe-python >=10 ships a deeply nested `events/`
